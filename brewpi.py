@@ -37,6 +37,7 @@ import traceback
 import urllib
 from distutils.version import LooseVersion
 from serial import SerialException
+from influxdb import InfluxDBClient
 
 # load non standard packages, exit when they are not installed
 try:
@@ -771,6 +772,36 @@ while run:
                     # copy to www dir.
                     # Do not write directly to www dir to prevent blocking www file.
                     shutil.copyfile(localJsonFileName, wwwJsonFileName)
+					# Send to Influx
+
+                    influxClient = InfluxDBClient('localhost', 8086, '', '', 'brewpi')
+					# Check if DB exists
+                    existing_db = influxClient.get_list_database() # Returns  [{'name': 'db1'}, {'name': 'db2'}, {u'name': u'db3'}]
+                    influx_need_init = true
+                    for database in existing_db:
+                        if database['name'] == 'brewpi':
+                            influx_need_init = false
+					
+                    if influx_need_init:
+                        influxClient.create_database('brewpi')
+                    influx_data = [
+                        {
+                        "measurement": "logData",
+                        "tags" : {
+                            'source': 'Temperatures'
+                            },
+                        "fields" : {
+							'FridgeTemp': newRow['FridgeTemp'],
+							'FridgeAnn' : newRow['FridgeAnn'],
+							'RoomTemp': newRow['RoomTemp'],
+							'State': newRow['State'],
+							'BeerSet': newRow['BeerSet'],
+							'FridgeSet': newRow['FridgeSet']
+							}
+                        }
+					]
+                    influxClient.write_points(influx_data)
+					
                     #write csv file too
                     csvFile = open(localCsvFileName, "a")
                     try:
