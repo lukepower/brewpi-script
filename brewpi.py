@@ -72,7 +72,7 @@ import brewpiVersion
 import pinList
 import expandLogMessage
 import BrewPiProcess
-import queue
+import Queue
 
 # Settings will be read from controller, initialize with same defaults as controller
 # This is mainly to show what's expected. Will all be overwritten on the first update from the controller
@@ -96,11 +96,11 @@ cv = dict(beerDiff=0.000, diffIntegral=0.000, beerSlope=0.000, p=0.000, i=0.000,
 deviceList = dict(listState="", installed=[], available=[])
 
 # Message queue
-messageQueue = queue.Queue()
+messageQueue = Queue.Queue()
 
 lcdText = ['Script starting up', ' ', ' ', ' ']
 
-def logMessage(message):
+def logMessage(message, messageType="error"):
     printStdErr(time.strftime("%b %d %Y %H:%M:%S   ") + message)
     messageQueue.put({'messageType': messageType, 'message': message})
 
