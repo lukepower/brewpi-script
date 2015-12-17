@@ -72,7 +72,7 @@ import brewpiVersion
 import pinList
 import expandLogMessage
 import BrewPiProcess
-
+import queue
 
 # Settings will be read from controller, initialize with same defaults as controller
 # This is mainly to show what's expected. Will all be overwritten on the first update from the controller
@@ -95,11 +95,21 @@ cv = dict(beerDiff=0.000, diffIntegral=0.000, beerSlope=0.000, p=0.000, i=0.000,
 # listState = "", "d", "h", "dh" to reflect whether the list is up to date for installed (d) and available (h)
 deviceList = dict(listState="", installed=[], available=[])
 
+# Message queue
+messageQueue = queue.Queue()
+
 lcdText = ['Script starting up', ' ', ' ', ' ']
 
 def logMessage(message):
     printStdErr(time.strftime("%b %d %Y %H:%M:%S   ") + message)
+    messageQueue.put({'messageType': messageType, 'message': message})
 
+def getLogMessages():
+    result_list = []
+    while not messageQueue.empty():
+        result_list.append(messageQueue.get())
+
+    return result_list
 # Read in command line arguments
 try:
     opts, args = getopt.getopt(sys.argv[1:], "hc:sqkfld",
@@ -849,6 +859,7 @@ while run:
 if ser:
     ser.close()  # close port
 if conn:
+    conn.send(json.dumps({'messages': getLogMessages()}))
     conn.shutdown(socket.SHUT_RDWR)  # close socket
     conn.close()
 
