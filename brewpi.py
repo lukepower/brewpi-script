@@ -535,7 +535,7 @@ while run:
             try:
                 newTemp = float(value)
             except ValueError:
-                logMessage("Cannot convert temperature '" + value + "' to float")
+                logMessage("Cannot convert temperature '" + value + "' to float","error")
                 continue
             if cc['tempSetMin'] <= newTemp <= cc['tempSetMax']:
                 cs['mode'] = 'b'
@@ -544,18 +544,18 @@ while run:
                 ser.write("j{mode:b, beerSet:" + json.dumps(cs['beerSet']) + "}")
                 logMessage("Notification: Beer temperature set to " +
                            str(cs['beerSet']) +
-                           " degrees in web interface")
+                           " degrees in web interface","info")
                 raise socket.timeout  # go to serial communication to update controller
             else:
                 logMessage("Beer temperature setting " + str(newTemp) +
                            " is outside of allowed range " +
                            str(cc['tempSetMin']) + " - " + str(cc['tempSetMax']) +
-                           ". These limits can be changed in advanced settings.")
+                           ". These limits can be changed in advanced settings.","warning")
         elif messageType == "setFridge":  # new constant fridge temperature received
             try:
                 newTemp = float(value)
             except ValueError:
-                logMessage("Cannot convert temperature '" + value + "' to float")
+                logMessage("Cannot convert temperature '" + value + "' to float", "error")
                 continue
 
             if cc['tempSetMin'] <= newTemp <= cc['tempSetMax']:
@@ -564,17 +564,17 @@ while run:
                 ser.write("j{mode:f, fridgeSet:" + json.dumps(cs['fridgeSet']) + "}")
                 logMessage("Notification: Fridge temperature set to " +
                            str(cs['fridgeSet']) +
-                           " degrees in web interface")
+                           " degrees in web interface","info")
                 raise socket.timeout  # go to serial communication to update controller
             else:
                 logMessage("Fridge temperature setting " + str(newTemp) +
                            " is outside of allowed range " +
                            str(cc['tempSetMin']) + " - " + str(cc['tempSetMax']) +
-                           ". These limits can be changed in advanced settings.")
+                           ". These limits can be changed in advanced settings.","warning")
         elif messageType == "setOff":  # cs['mode'] set to OFF
             cs['mode'] = 'o'
             ser.write("j{mode:o}")
-            logMessage("Notification: Temperature control disabled")
+            logMessage("Notification: Temperature control disabled","info")
             raise socket.timeout
         elif messageType == "setParameters":
             # receive JSON key:value pairs to set parameters on the controller
@@ -584,20 +584,20 @@ while run:
                 if 'tempFormat' in decoded:
                     changeWwwSetting('tempFormat', decoded['tempFormat'])  # change in web interface settings too.
             except json.JSONDecodeError:
-                logMessage("Error: invalid JSON parameter string received: " + value)
+                logMessage("Error: invalid JSON parameter string received: " + value,"error")
             raise socket.timeout
         elif messageType == "stopScript":  # exit instruction received. Stop script.
             # voluntary shutdown.
             # write a file to prevent the cron job from restarting the script
             logMessage("stopScript message received on socket. " +
-                       "Stopping script and writing dontrunfile to prevent automatic restart")
+                       "Stopping script and writing dontrunfile to prevent automatic restart","info")
             run = 0
             dontrunfile = open(dontRunFilePath, "w")
             dontrunfile.write("1")
             dontrunfile.close()
             continue
         elif messageType == "quit":  # quit instruction received. Probably sent by another brewpi script instance
-            logMessage("quit message received on socket. Stopping script.")
+            logMessage("quit message received on socket. Stopping script.","info")
             run = 0
             # Leave dontrunfile alone.
             # This instruction is meant to restart the script or replace it with another instance.
@@ -606,7 +606,7 @@ while run:
             # erase the log files for stderr and stdout
             open(util.scriptPath() + '/logs/stderr.txt', 'wb').close()
             open(util.scriptPath() + '/logs/stdout.txt', 'wb').close()
-            logMessage("Fresh start! Log files erased.")
+            logMessage("Fresh start! Log files erased.","info")
             continue
         elif messageType == "interval":  # new interval received
             newInterval = int(value)
@@ -614,10 +614,10 @@ while run:
                 try:
                     config = util.configSet(configFile, 'interval', float(newInterval))
                 except ValueError:
-                    logMessage("Cannot convert interval '" + value + "' to float")
+                    logMessage("Cannot convert interval '" + value + "' to float","error")
                     continue
                 logMessage("Notification: Interval changed to " +
-                           str(newInterval) + " seconds")
+                           str(newInterval) + " seconds","info")
         elif messageType == "startNewBrew":  # new beer name
             newName = value
             result = startNewBrew(newName)
@@ -634,7 +634,7 @@ while run:
         elif messageType == "dateTimeFormatDisplay":
             config = util.configSet(configFile, 'dateTimeFormatDisplay', value)
             changeWwwSetting('dateTimeFormatDisplay', value)
-            logMessage("Changing date format config setting: " + value)
+            logMessage("Changing date format config setting: " + value,"info")
         elif messageType == "setActiveProfile":
             # copy the profile CSV file to the working directory
             logMessage("Setting profile '%s' as active profile" % value)
@@ -833,14 +833,14 @@ while run:
                     deviceList['available'] = json.loads(line[2:])
                     oldListState = deviceList['listState']
                     deviceList['listState'] = oldListState.strip('h') + "h"
-                    logMessage("Available devices received: "+ json.dumps(deviceList['available']))
+                    logMessage("Available devices received: "+ json.dumps(deviceList['available']), "info")
                 elif line[0] == 'd':
                     deviceList['installed'] = json.loads(line[2:])
                     oldListState = deviceList['listState']
                     deviceList['listState'] = oldListState.strip('d') + "d"
-                    logMessage("Installed devices received: " + json.dumps(deviceList['installed']).encode('utf-8'))
+                    logMessage("Installed devices received: " + json.dumps(deviceList['installed']).encode('utf-8'),"info")
                 elif line[0] == 'U':
-                    logMessage("Device updated to: " + line[2:])
+                    logMessage("Device updated to: " + line[2:],"info")
                 else:
                     logMessage("Cannot process line from controller: " + line)
                 # end or processing a line
