@@ -110,6 +110,8 @@ def getLogMessages():
         result_list.append(messageQueue.get())
 
     return result_list
+
+    
 # Read in command line arguments
 try:
     opts, args = getopt.getopt(sys.argv[1:], "hc:sqkfld",
@@ -512,6 +514,8 @@ while run:
             conn.send(json.dumps(cs))
         elif messageType == "getControlVariables":
             conn.send(json.dumps(cv))
+        elif messageType == "getMessages":
+            conn.send(json.dumps({'messages': getLogMessages()}))
         elif messageType == "refreshControlConstants":
             ser.write("c")
             raise socket.timeout
@@ -859,7 +863,6 @@ while run:
 if ser:
     ser.close()  # close port
 if conn:
-    conn.send(json.dumps({'messages': getLogMessages()}))
     conn.shutdown(socket.SHUT_RDWR)  # close socket
     conn.close()
 
