@@ -95,9 +95,6 @@ cv = "{}"
 # listState = "", "d", "h", "dh" to reflect whether the list is up to date for installed (d) and available (h)
 deviceList = dict(listState="", installed=[], available=[])
 
-# Message queue
-messageQueue = Queue.Queue()
-
 lcdText = ['Script starting up', ' ', ' ', ' ']
 
 # Read in command line arguments
