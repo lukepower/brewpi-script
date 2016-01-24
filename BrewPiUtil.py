@@ -20,6 +20,7 @@ import sys
 import os
 import serial
 import autoSerial
+import Queue
 
 try:
     import configobj
@@ -27,6 +28,8 @@ except ImportError:
     print("BrewPi requires ConfigObj to run, please install it with 'sudo apt-get install python-configobj")
     sys.exit(1)
 
+# Message queue
+messageQueue = Queue.Queue()
 
 def addSlash(path):
     """
@@ -83,12 +86,15 @@ def configSet(configFile, settingName, value):
 def printStdErr(*objs):
     print("", *objs, file=sys.stderr)
 
-def logMessage(message):
-    """
-    Prints a timestamped message to stderr
-    """
-    printStdErr(time.strftime("%b %d %Y %H:%M:%S   ") + message)
+def logMessage(message, messageType="error"):
+     printStdErr(time.strftime("%b %d %Y %H:%M:%S   ") + message)		     printStdErr(time.strftime("%b %d %Y %H:%M:%S   ") + message)
+    messageQueue.put({'messageType': messageType, 'message': message})
 
+def getLogMessages():
+    result_list = []
+    while not messageQueue.empty():
+        result_list.append(messageQueue.get())
+    return result_list
 
 def scriptPath():
     """
