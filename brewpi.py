@@ -440,6 +440,9 @@ def renameTempKey(key):
         "t": "Time"}
     return rename.get(key, key)
 
+def sendData (data)
+    conn.send(data + json.dumps({'messages': getLogMessages()}))
+    
 while run:
     if config['dataLogging'] == 'active':
         # Check whether it is a new day
@@ -466,7 +469,7 @@ while run:
         if messageType == "ack":  # acknowledge request
             conn.send('ack')
         elif messageType == "lcd":  # lcd contents requested
-            conn.send(json.dumps(lcdText))
+            sendData(json.dumps(lcdText))
         elif messageType == "getMode":  # echo cs['mode'] setting
             conn.send(cs['mode'])
         elif messageType == "getFridge":  # echo fridge temperature setting
