@@ -489,7 +489,7 @@ while run:
         elif messageType == "getControlVariables":
             conn.send(cv)
         elif messageType == "getMessages":
-            csendData({'messages': getLogMessages()})
+            sendData({'messages': getLogMessages()})
         elif messageType == "refreshControlConstants":
             bg_ser.write("c")
             raise socket.timeout
