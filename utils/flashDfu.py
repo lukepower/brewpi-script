@@ -70,7 +70,7 @@ for o, a in opts:
 
         exit()
     # supply a config file
-    if o in ('-f', '--config'):
+    if o in ('-f', '--file'):
         binFile = os.path.abspath(a)
         if not os.path.exists(binFile):
             sys.exit('ERROR: Binary file "%s" was not found!' % binFile)
