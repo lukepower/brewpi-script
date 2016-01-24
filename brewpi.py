@@ -20,6 +20,7 @@ import sys
 
 from BrewPiUtil import printStdErr
 from BrewPiUtil import logMessage
+from BrewPiUtil import getLogMessages
 
 # Check needed software dependencies to nudge users to fix their setup
 if sys.version_info < (2, 7):
@@ -440,7 +441,7 @@ def renameTempKey(key):
         "t": "Time"}
     return rename.get(key, key)
 
-def sendData (data)
+def sendData(data):
     conn.send(data + json.dumps({'messages': getLogMessages()}))
     
 while run:
