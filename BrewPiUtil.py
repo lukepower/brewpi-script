@@ -87,7 +87,7 @@ def printStdErr(*objs):
     print("", *objs, file=sys.stderr)
 
 def logMessage(message, messageType="error"):
-     printStdErr(time.strftime("%b %d %Y %H:%M:%S   ") + message)		     printStdErr(time.strftime("%b %d %Y %H:%M:%S   ") + message)
+    printStdErr(time.strftime("%b %d %Y %H:%M:%S   ") + message)
     messageQueue.put({'messageType': messageType, 'message': message})
 
 def getLogMessages():
