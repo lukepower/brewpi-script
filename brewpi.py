@@ -442,7 +442,7 @@ def renameTempKey(key):
     return rename.get(key, key)
 
 def sendData(data):
-    conn.send(data + json.dumps({'messages': getLogMessages()}))
+    conn.send(json.dumps({'response': data, 'messages': getLogMessages()}))
     
 while run:
     if config['dataLogging'] == 'active':
@@ -470,26 +470,26 @@ while run:
         if messageType == "ack":  # acknowledge request
             conn.send('ack')
         elif messageType == "lcd":  # lcd contents requested
-            sendData(json.dumps(lcdText))
+            sendData((lcdText))
         elif messageType == "getMode":  # echo cs['mode'] setting
             conn.send(cs['mode'])
         elif messageType == "getFridge":  # echo fridge temperature setting
-            conn.send(json.dumps(cs['fridgeSet']))
+            sendData(cs['fridgeSet'])
         elif messageType == "getBeer":  # echo fridge temperature setting
-            conn.send(json.dumps(cs['beerSet']))
+            sendData(cs['beerSet'])
         elif messageType == "getControlConstants":
-            conn.send(json.dumps(cc))
+            sendData(cc)
         elif messageType == "getControlSettings":
             if cs['mode'] == "p":
                 profileFile = util.addSlash(util.scriptPath()) + 'settings/tempProfile.csv'
                 with file(profileFile, 'r') as prof:
                     cs['profile'] = prof.readline().split(",")[-1].rstrip("\n")
             cs['dataLogging'] = config['dataLogging']
-            conn.send(json.dumps(cs))
+            sendData(cs)
         elif messageType == "getControlVariables":
             conn.send(cv)
         elif messageType == "getMessages":
-            conn.send(json.dumps({'messages': getLogMessages()}))
+            csendData({'messages': getLogMessages()})
         elif messageType == "refreshControlConstants":
             bg_ser.write("c")
             raise socket.timeout
@@ -586,16 +586,16 @@ while run:
         elif messageType == "startNewBrew":  # new beer name
             newName = value
             result = startNewBrew(newName)
-            conn.send(json.dumps(result))
+            sendData(result)
         elif messageType == "pauseLogging":
             result = pauseLogging()
-            conn.send(json.dumps(result))
+            sendData(result)
         elif messageType == "stopLogging":
             result = stopLogging()
-            conn.send(json.dumps(result))
+            sendData(result)
         elif messageType == "resumeLogging":
             result = resumeLogging()
-            conn.send(json.dumps(result))
+            sendData(result)
         elif messageType == "dateTimeFormatDisplay":
             config = util.configSet(configFile, 'dateTimeFormatDisplay', value)
             changeWwwSetting('dateTimeFormatDisplay', value)
@@ -666,7 +666,7 @@ while run:
                                 shield=hwVersion.shield,
                                 deviceList=deviceList,
                                 pinList=pinList.getPinList(hwVersion.board, hwVersion.shield))
-                conn.send(json.dumps(response))
+                sendData(response)
             else:
                 conn.send("device-list-not-up-to-date")
         elif messageType == "applyDevice":
